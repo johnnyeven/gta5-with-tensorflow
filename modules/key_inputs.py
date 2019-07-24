@@ -1,5 +1,4 @@
-from pykeyboard import PyKeyboardEvent
-from pykeyboard.mac import key_code_translate_table
+from inputs import get_key
 
 w = [1, 0, 0, 0, 0, 0, 0, 0, 0]
 s = [0, 1, 0, 0, 0, 0, 0, 0, 0]
@@ -12,7 +11,7 @@ sd = [0, 0, 0, 0, 0, 0, 0, 1, 0]
 nk = [0, 0, 0, 0, 0, 0, 0, 0, 1]
 
 
-class GTA5KeyboardEvent(PyKeyboardEvent):
+class GTA5KeyboardEvent:
     key_w = False
     key_a = False
     key_s = False
@@ -20,40 +19,35 @@ class GTA5KeyboardEvent(PyKeyboardEvent):
     key_change_handler = None
 
     def __init__(self, key_change_handler=None):
-        PyKeyboardEvent.__init__(self)
         if key_change_handler is not None:
             self.key_change_handler = key_change_handler
 
-    # for windows or linux
-    def tap(self, key_code, character, press):
-        print(key_code, character, press)
-
-    # for macqwertyui
-    def key_press(self, key):
-        key_str = key_code_translate_table[key]
-        if key_str == 'a':
-            self.key_a = True
-        elif key_str == 's':
-            self.key_s = True
-        elif key_str == 'd':
-            self.key_d = True
-        elif key_str == 'w':
-            self.key_w = True
-        if self.key_change_handler is not None:
-            self.key_change_handler(self.get_keys_output())
-
-    def key_release(self, key):
-        key_str = key_code_translate_table[key]
-        if key_str == 'a':
-            self.key_a = False
-        elif key_str == 's':
-            self.key_s = False
-        elif key_str == 'd':
-            self.key_d = False
-        elif key_str == 'w':
-            self.key_w = False
-        if self.key_change_handler is not None:
-            self.key_change_handler(self.get_keys_output())
+    def run(self):
+        while True:
+            events = get_key()
+            for evt in events:
+                if evt.ev_type == "Key":
+                    if evt.state == 1:
+                        print(evt.code)
+                        if evt.code == "KEY_A":
+                            self.key_a = True
+                        elif evt.code == "KEY_S":
+                            self.key_s = True
+                        elif evt.code == "KEY_RESERVED":
+                            self.key_d = True
+                        elif evt.code == "KEY_W":
+                            self.key_w = True
+                    elif evt.state == 0:
+                        if evt.code == "KEY_A":
+                            self.key_a = False
+                        elif evt.code == "KEY_S":
+                            self.key_s = False
+                        elif evt.code == "KEY_RESERVED":
+                            self.key_d = False
+                        elif evt.code == "KEY_W":
+                            self.key_w = False
+                    if self.key_change_handler is not None:
+                        self.key_change_handler(self.get_keys_output())
 
     def get_keys_output(self):
         """
